@@ -1,21 +1,22 @@
 """
     Sleep Parser
 """
-import json
+
 from enum import Enum
 from typing import Dict
 from datetime import timedelta
 
 from dateutil.parser import parse
+from utils.data_sync import DataSync
 
 from utils.mapper import Mapper
-from utils.api import API
 
 
 class Sleep(Enum):
     """
-        Enum to hold Sleep Activities
+    Enum to hold Sleep Activities
     """
+
     DEEP = 5
     LIGHT = 4
     REM = 6
@@ -26,7 +27,7 @@ class Sleep(Enum):
 
 class SleepMapper(Mapper):
     """
-        FitBit -> Google Fit Sleep Mapper
+    FitBit -> Google Fit Sleep Mapper
     """
 
     data_type_name = "com.google.sleep.segment"
@@ -41,7 +42,7 @@ class SleepMapper(Mapper):
             "value": [{"intVal": Sleep[point["level"].upper()].value}],
         }
 
-    def parse(self, source_id: str, data: Dict):
+    def parse(self, data: Dict):
         """
         Parse Sleep Activities to Google Fit Format
         https://developers.google.com/fit/scenarios/write-sleep-data#rest
@@ -51,40 +52,24 @@ class SleepMapper(Mapper):
             for state in entry["levels"]["data"]:
                 parsed.append(self._build_point(state))
 
-        return super().parse(source_id, {"dataSourceId": source_id, "point": parsed})
-
-    def get_datasource(self, stream_name: str) -> Dict:
-
-        return {
-            "dataStreamName": stream_name,
-            "type": "raw",
-            "application": {
-                "name": "FitBit Sync",
-                "version": "1"
-            },
-            "dataType": {
-                "name": "com.google.sleep.segment"
-            }
-        }
+        super().parse(parsed)
 
 
-class SleepLogger(API):
+class SleepLogger(DataSync):
+    """
+    Logs Sleep data to Google Fit
+    """
+
+    mapper = SleepMapper()
+    stream_name = "FitBit - Sleep Stream"
 
     def __init__(self) -> None:
-        self.parser = SleepMapper()
+        self.mapper = SleepMapper()
+        self.stream_name = "FitBit - Sleep Stream"
+        super().__init__("dataSources", "dataSources/dataSourceId/datasets/datasetId")
 
-    async def step_one(self, name: str) -> str:
-
-        params = self.parser.get_datasource(name)
-
-    async def log_me(self, data) -> None:
+    async def sync(self, data: Dict) -> Dict:
         """
+        Parse & Sync data to google Fit
         """
-
-
-if __name__ == "__main__":
-    with open("sleep.json", encoding="utf-8") as r:
-
-        _data = json.load(r)
-
-    print(SleepMapper().parse("112", _data))
+        return await super().sync(data)
