@@ -27,12 +27,11 @@ class Mapper(ABC):
         return int(date_time * 1000)
 
     @abstractmethod
-    def parse(self, source_id: str, data: dict) -> Dict:
+    def parse(self, data: dict) -> Dict:
         """
         Base Parser for FitBit -> Google Fit
         """
         self.validated_data = data
-        return self
 
     def __repr__(self) -> str:
         return json.dumps(self.validated_data, indent=4)
