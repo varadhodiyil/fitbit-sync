@@ -24,7 +24,7 @@ class Mapper(ABC):
         """
         Epoch to Nano Secs
         """
-        return int(date_time * 1000)
+        return int(date_time * int(1e9))
 
     @abstractmethod
     def parse(self, data: dict) -> Dict:

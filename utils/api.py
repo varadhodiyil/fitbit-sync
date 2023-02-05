@@ -59,7 +59,7 @@ class API(ABC, metaclass=Singleton):
         """
         path = f"{self.base_url}/{path}" if path else self.base_url
         session = self.get_session()
-        print(self.headers)
+
         async with session.get(path, params=params) as resp:
             if resp.status != 200:
                 try:
