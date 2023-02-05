@@ -1,10 +1,14 @@
-from aiohttp import web
+"""
+App Web Server
+"""
+import os
 from typing import Dict
+
+from aiohttp import web
 from aiohttp.web_response import json_response
 from service.fit_bit import FitBit
 
-
-fit_bit = FitBit("ID", "SECRET")
+fit_bit = FitBit(os.environ.get("CLIENT_ID"), os.environ.get("CLIENT_SECRET"))
 
 
 class FitBitAuthHandler(web.View):
